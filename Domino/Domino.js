@@ -61,7 +61,7 @@ class App {
             0.1,
             100
         );
-        camera.position.z = 2;
+        camera.position.set(0, 20, 20);
         // 다른 메서드에서 참조할 수 있도록 필드에 정의한다.
         this._camera = camera;
     }
@@ -84,23 +84,31 @@ class App {
     }
 
     _setupModel() {
-        // 정육면체 Geometry 객체 생성
-        // width, height, depth 인자를 모두 1로 설정하여 생성한다.
-        const geometry = new Three.BoxGeometry(1, 1, 1);
-        // 파란색 material 생성
-        const material = new Three.MeshPhongMaterial({ color: 0x44a88 });
-
-        // Geometry와 Material를 이용하여 Mesh가 생성된다.
-        const cube = new Three.Mesh(geometry, material);
-
-        // 생성한 Mesh를 Scene 객체에 구가
-        this._scene.add(cube);
-        // 다른 메서드에서 참조할 수 있도록 필드에 정의한다.
-        this._cube = cube;
+        this._createTable();
+        this._createDomino();
     }
 
     _setupControls() {
         new OrbitControls(this._camera, this._divContainer);
+    }
+
+    _createTable() {
+        const position = { x: 0, y: -0.525, z: 0 };
+        const scale = { x: 30, y: 0.5, z: 30 };
+
+        const tableGeometry = new Three.BoxGeometry();
+        const tableMaterial = new Three.MeshPhongMaterial({ color: 0x070707 });
+        const table = new Three.Mesh(tableGeometry, tableMaterial);
+
+        table.position.set(position.x, position.y, position.z);
+        table.scale.set(scale.x, scale.y, scale.z);
+
+        table.receiveShadow = true;
+        this._scene.add(table);
+    }
+
+    _createDomino() {
+
     }
 
     resize() {
