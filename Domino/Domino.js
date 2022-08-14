@@ -108,7 +108,53 @@ class App {
     }
 
     _createDomino() {
+        const controlPoints = [
+            [-10., 0., -10.],
+            [10., 0., -10.],
+            [10., 0., 10.],
+            [-10., 0., 10.],
+            [-10., 0., -8.],
+            [8., 0., -8.],
+            [8., 0., 8.],
+            [-8., 0., 8.],
+            [-8., 0., -6.],
+            [6., 0., -6.],
+            [6., 0., 6.],
+            [-6., 0., 6.],
+            [-6., 0., -4.],
+            [4., 0., -4.],
+            [4., 0., 4.],
+            [-4., 0., 4.],
+            [-4., 0., -2.],
+            [2., 0., -2.],
+            [2., 0., 2.],
+            [-2., 0., 2.],
+            [-2., 0., 0.],
+            [0., 0., 0.],
+        ];
 
+        // contorlPoints를 이용하여 부드러운 curve를 Catmull-Romm Spline 알고리즘으로 정의한다.
+        const p0 = new Three.Vector3();
+        const p1 = new Three.Vector3();
+        const curve = new Three.CatmullRomCurve3(
+            controlPoints.map((p, ndx) => {
+                if (ndx === controlPoints.length - 1) return p0.set(...p);
+                p0.set(...p);
+                p1.set(...controlPoints[(ndx + 1) % controlPoints.length]);
+                return [
+                    (new Three.Vector3()).copy(p0),
+                    (new Three.Vector3()).lerpVectors(p0, p1, 0.3),
+                    (new Three.Vector3()).lerpVectors(p0, p1, 0.7),
+                ];
+            }).flat(), false
+        );
+
+        // Catmull-Romm Spline 알고리즘으로 생성한 curve를 시각화
+        const points = curve.getPoints(1000);
+        const geometry = new Three.BufferGeometry().setFromPoints(points);
+        const material = new Three.LineBasicMaterial({ color: 0xffff00 });
+        const curveObject = new Three.Line(geometry, material);
+        this._scene.add(curveObject);
     }
 
     resize() {
