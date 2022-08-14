@@ -155,6 +155,42 @@ class App {
         const material = new Three.LineBasicMaterial({ color: 0xffff00 });
         const curveObject = new Three.Line(geometry, material);
         this._scene.add(curveObject);
+
+        // 도미노 1개의 크기 설정
+        const scale = { x: 0.75, y: 1., z: 0.1 };
+        // 도미노 Geometry 정의
+        const dominoGeometry = new Three.BoxGeometry();
+        // 도미노 Material 정의
+        const dominoMaterial = new Three.MeshNormalMaterial();
+
+        const step = 0.0001;
+        let length = 0.0;
+        for (let t = 0.; t < 1.0; t += step) {
+            // 커브상의 위치는 getPoint 메서드를 통해 얻는다.
+            // getPoint에 0을 넘기면 시작점을 얻고, 1을 넘기면 끝점을 얻는다.
+            const pt1 = curve.getPoint(t);
+            const pt2 = curve.getPoint(t + step);
+
+            // pt1과 pt2 사이의 누적 거리
+            length += pt1.distanceTo(pt2);
+
+            // 누적 거리가 0.4이상일 때 도미노 Mesh를 생성하고 장면에 추가한다.
+            if (length > 0.4) {
+                const domino = new Three.Mesh(dominoGeometry, dominoMaterial);
+                // Mesh를 생성하고 위치와 크기를 지정한다.
+                domino.position.copy(pt1);
+                domino.scale.set(scale.x, scale.y, scale.z);
+                // 회전은 도미노가 자신의 위치에서 다음 위치를 바라보도록 lookAt 메서드를 통해 지정한다.
+                domino.lookAt(pt2);
+
+                domino.castShadow = true;
+                domino.receiveShadow = true;
+                this._scene.add(domino);
+
+                // 장면에 추가하면 누적 거리 length를 0으로 초기화한다.
+                length = 0.0;
+            }
+        }
     }
 
     resize() {
