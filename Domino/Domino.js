@@ -19,6 +19,10 @@ class App {
         // canvas 타입의 DOM 객체이다.
         // 문서 객체 모델(DOM, Document Object Model)은 XML이나 HTML 문서에 접근하기 위한 일종의 인터페이스.
         divContainer.appendChild(renderer.domElement);
+
+        // 도미노 그림자 활성화를 위하여 렌더러의 shadowMap 활성화
+        renderer.shadowMap.enabled = true;
+
         // 다른 메서드에서 참조할 수 있도록 필드에 정의한다.
         this._renderer = renderer;
 
@@ -70,16 +74,27 @@ class App {
         // 광원 색상 설정
         const color = 0xffffff;
         // 광원 세기 설정
-        const intensity = 1;
+        const intensity = 0.9;
         // 위 설정을 바탕으로 Directional 광원 객체 생성
         const light = new Three.DirectionalLight(color, intensity);
         // 광원 위치 설정
-        light.position.set(-1, 2, 4);
+        light.position.set(-10, 15, 10);
         // Scene객체에 광원 추가
         this._scene.add(light);
 
+        // DirectionalLight 광원에 그림자 설정 코드 추가
+        light.castShadow = true;
+        light.shadow.mapSize.width = 2048;
+        light.shadow.mapSize.height = 2048;
+
+        let d = 15;
+        light.shadow.camera.left = -d;
+        light.shadow.camera.right = d;
+        light.shadow.camera.top = d;
+        light.shadow.camera.bottom = -d;
+
         // AmbientLight 추가
-        const ambientLight = new Three.AmbientLight(0xffffff, 1);
+        const ambientLight = new Three.AmbientLight(0xffffff, 0.3);
         this._scene.add(ambientLight);
     }
 
@@ -97,7 +112,7 @@ class App {
         const scale = { x: 30, y: 0.5, z: 30 };
 
         const tableGeometry = new Three.BoxGeometry();
-        const tableMaterial = new Three.MeshPhongMaterial({ color: 0x070707 });
+        const tableMaterial = new Three.MeshPhongMaterial({ color: 0x878787 });
         const table = new Three.Mesh(tableGeometry, tableMaterial);
 
         table.position.set(position.x, position.y, position.z);
@@ -149,12 +164,12 @@ class App {
             }).flat(), false
         );
 
-        // Catmull-Romm Spline 알고리즘으로 생성한 curve를 시각화
-        const points = curve.getPoints(1000);
-        const geometry = new Three.BufferGeometry().setFromPoints(points);
-        const material = new Three.LineBasicMaterial({ color: 0xffff00 });
-        const curveObject = new Three.Line(geometry, material);
-        this._scene.add(curveObject);
+        // // Catmull-Romm Spline 알고리즘으로 생성한 curve를 시각화
+        // const points = curve.getPoints(1000);
+        // const geometry = new Three.BufferGeometry().setFromPoints(points);
+        // const material = new Three.LineBasicMaterial({ color: 0xffff00 });
+        // const curveObject = new Three.Line(geometry, material);
+        // this._scene.add(curveObject);
 
         // 도미노 1개의 크기 설정
         const scale = { x: 0.75, y: 1., z: 0.1 };
