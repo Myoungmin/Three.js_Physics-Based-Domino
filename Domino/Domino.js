@@ -35,8 +35,10 @@ class App {
         this._setupCamera();
         // 조명 설정
         this._setupLight();
-        // 3D 모델 설정
-        this._setupModel();
+        // Ammon 초기화
+        this._setupAmmo();
+        // // 3D 모델 설정
+        // this._setupModel();
         // 마우스 컨트롤 설정
         this._setupControls();
 
@@ -52,6 +54,24 @@ class App {
         // render 메서드를 requestAnimationFrame이라는 API에 넘겨줘서 호출해준다.
         // render 메서드 안에서 쓰이는 this가 App 클래스 객체를 가리키도록 하기 위해 bind 사용
         requestAnimationFrame(this.render.bind(this));
+    }
+
+    _setupAmmo() {
+        Ammo().then(() => {
+            // 물리적인 충돌과 관련된 객체 생성
+            const overlappingPairCache = new Ammo.btDbvtBroadphase();
+            const collisionConfiguration = new Ammo.btDefaultCollisionConfiguration();
+            const dispatcher = new Ammo.btCollisionDispatcher(collisionConfiguration);
+            const solver = new Ammo.btSequentialImpulseConstraintSolver();
+
+            // y축으로 중력 가속도 지정
+            const physicsWorld = new Ammo.btDiscreteDynamicsWorld(
+                dispatcher, overlappingPairCache, solver, collisionConfiguration);
+            physicsWorld.setGravity(new Ammo.btVector3(0, -9.807, 0));
+
+            this._physicsWorld = physicsWorld;
+            this._setupModel();
+        });
     }
 
     _setupCamera() {
