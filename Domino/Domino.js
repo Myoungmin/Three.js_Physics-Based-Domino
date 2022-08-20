@@ -140,6 +140,32 @@ class App {
 
         table.receiveShadow = true;
         this._scene.add(table);
+
+        // 위치와 회전값을 정의하기 위해 btTransform 인스턴스 생성
+        const transform = new Ammo.btTransform();
+        // Table은 회전이 되어 있지 않으므로 x, y, z 모두 0
+        const quaternion = { x: 0, y: 0, z: 0, w: 1 };
+        transform.setIdentity();
+        // btTransform로 위치 설정
+        transform.setOrigin(new Ammo.btVector3(position.x, position.y, position.z));
+        // btTransform로 회전 설정
+        transform.setRotation(
+            new Ammo.btQuaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w));
+        // 모션 상태는 디폴트
+        const motionState = new Ammo.btDefaultMotionState(transform);
+        // Table 메시처럼 사각형 도형으로 설정하기 위해 크기값으로 btBoxShape 생성
+        const colShape = new Ammo.btBoxShape(
+            new Ammo.btVector3(scale.x * 0.5, scale.y * 0.5, scale.z * 0.5));
+
+        // 테이블의 질량 0으로 설정
+        // 질량이 0이면 물리적인 영향을 전혀 받지 않고, 어떠한 변형도 없이 지정된 자리에 가만히 있게 된다.
+        const mass = 0;
+        colShape.calculateLocalInertia(mass);
+        const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, motionState, colShape);
+        // btRigidBody 생성
+        const body = new Ammo.btRigidBody(rbInfo);
+        // _physicsWorld에 생성한 btRigidBody 추가
+        this._physicsWorld.addRigidBody(body);
     }
 
     _createDomino() {
