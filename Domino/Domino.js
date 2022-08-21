@@ -224,6 +224,9 @@ class App {
         // 도미노 Material 정의
         const dominoMaterial = new Three.MeshNormalMaterial();
 
+        // 도미노가 물리적 영향을 받기위해 질량 설정
+        const mass = 1;
+
         const step = 0.0001;
         let length = 0.0;
         for (let t = 0.; t < 1.0; t += step) {
@@ -247,6 +250,32 @@ class App {
                 domino.castShadow = true;
                 domino.receiveShadow = true;
                 this._scene.add(domino);
+
+                ///* 도미노의 물리속성 추가 시작 *///
+
+                // 도미노의 현재 회전값을 Quaternion 방식으로 얻어온다.
+                const quaternion = new Three.Quaternion();
+                quaternion.setFromEuler(domino.rotation);
+
+                // Three.js의 도미노 Mesh와 동일한 위치, 크기, 회전값으로 설정된 Ammo.btBoxShape 객체를 생성한다.
+                const transform = new Ammo.btTransform();
+                transform.setIdentity();
+                transform.setOrigin(new Ammo.btVector3(pt1.x, pt1.y, pt1.z));
+                transform.setRotation(new Ammo.btQuaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w));
+                const motionState = new Ammo.btDefaultMotionState(transform);
+                const colShape = new Ammo.btBoxShape(new Ammo.btVector3(scale.x * 0.5, scale.y * 0.5, scale.z * 0.5));
+
+                // 사실적인 물리효과를 위해 관성에 대한 속성 설정
+                const localInertia = new Ammo.btVector3(0, 0, 0);
+                colShape.calculateLocalInertia(mass, localInertia);
+
+                // Ammo.btRigidBody 객체로 생성하여 _physicsWorld에 추가
+                const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, motionState, colShape, localInertia);
+                const body = new Ammo.btRigidBody(rbInfo);
+                this._physicsWorld.addRigidBody(body);
+
+                // Three.js의 도미노 Mesh에 생성한 body 객체를 연결하여 도미노에대한 물리적 객체를 참조할 수 있도록 설정한다.
+                domino.physicsBody = body;
 
                 // 장면에 추가하면 누적 거리 length를 0으로 초기화한다.
                 length = 0.0;
